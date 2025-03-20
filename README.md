@@ -1,43 +1,44 @@
-# check_wifi_info
-WiFi Network Manager is a Streamlit-based app designed to help users manage and check the details of their WiFi networks and devices connected to their router. 
-WiFi Network Manager is a Streamlit-based app designed to help users manage and check the details of their WiFi networks and devices connected to their router. The app allows users to:
+🛠️ WiFi and Network Information Manager
+A Streamlit web application that helps users retrieve saved WiFi passwords, check connected devices, and find their local IP address.
 
-# View saved WiFi passwords.
-List devices connected to the router.
-Display the local IP and MAC addresses of connected devices.
-Show the signal strength of the connected WiFi network.
-Save WiFi passwords to a .txt file.
+🔥 Features
+✅ Check Saved WiFi Passwords – Retrieve stored WiFi passwords (Windows only).
+✅ View Connected Devices – List devices currently connected to your network (Windows only).
+✅ Find Your Local IP Address – Display your local machine’s IP address.
+✅ User-Friendly Interface – Simple and interactive UI using Streamlit.
 
-# Features:
-View Saved WiFi Passwords: Displays saved WiFi passwords for all networks stored on your device.
-List Connected Devices: Shows the IP and MAC addresses of devices connected to your router.
-WiFi Signal Strength: Check the current signal strength of the connected WiFi network (in percentage).
-Save WiFi Passwords: Save your WiFi passwords into a .txt file for easy reference.
-Local IP Address: Displays the local IP address of your computer.
+🛠️ Technologies Used
+🔹 Python
+🔹 Streamlit
+🔹 Subprocess
+🔹 Regex
+🔹 Platform
 
-# Requirements:
-Python 3.7+
-Streamlit
-speedtest-cli (optional if you plan to use the internet speed feature, otherwise not needed)
-
-To install the required packages:
+📌 How to Run
+1️⃣ Clone this repository:
 
 bash
 Copy
-pip install streamlit
-How to Use:
-Clone the repository:
+Edit
+git clone https://github.com/YOUR-USERNAME/wifi-network-info.git
+cd wifi-network-info
+2️⃣ Install dependencies:
 
 bash
 Copy
-git clone https://github.com/yourusername/wifi-network-manager.git
-Navigate into the app directory:
+Edit
+pip install -r requirements.txt
+3️⃣ Run the Streamlit app:
 
 bash
 Copy
-cd wifi-network-manager
-Run the Streamlit app:
-
-bash
-Copy
+Edit
 streamlit run app.py
+⚠️ Important Notes
+WiFi password retrieval is Windows-only (uses netsh commands).
+Connected devices detection works on Windows using arp -a.
+Local IP address retrieval supports both Windows and Linux/macOS.
+🚀 Future Enhancements
+✅ Support for Linux/macOS WiFi password retrieval
+✅ Advanced network scanning for connected devices
+✅ UI improvements with better formatting
