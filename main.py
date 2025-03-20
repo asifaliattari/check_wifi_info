@@ -24,7 +24,7 @@ def get_wifi_password():
     except Exception as e:
         return {"Error": str(e)}
 
-# Function to get connected devices (Linux and macOS)
+# Function to get connected devices (Works on Windows, Linux/macOS alternative could be added)
 def get_connected_devices():
     try:
         system = platform.system()
@@ -46,7 +46,7 @@ def get_local_ip():
             match = re.search(r"IPv4 Address[.\s]+: (\d+\.\d+\.\d+\.\d+)", result.stdout)
             return match.group(1) if match else "Error"
         else:
-            # For Linux/macOS, use 'ifconfig' or 'hostname' to get the local IP
+            # For Linux/macOS, use 'hostname' to get the local IP
             result = subprocess.run(["hostname", "-I"], capture_output=True, text=True)
             return result.stdout.strip() if result.returncode == 0 else "Error"
     except Exception as e:
