@@ -58,13 +58,16 @@ st.title("WiFi and Network Information Manager")
 option = st.sidebar.radio("Select an option", ["Check WiFi Password", "Connected Devices", "Your Local IP"])
 
 if option == "Check WiFi Password":
-    st.subheader("Saved WiFi Passwords")
-    passwords = get_wifi_password()
-    if "Error" in passwords:
-        st.write(passwords["Error"])
+    if platform.system() == 'Windows':
+        st.subheader("Saved WiFi Passwords")
+        passwords = get_wifi_password()
+        if "Error" in passwords:
+            st.write(passwords["Error"])
+        else:
+            for wifi, pwd in passwords.items():
+                st.write(f"**{wifi}**: {pwd}")
     else:
-        for wifi, pwd in passwords.items():
-            st.write(f"**{wifi}**: {pwd}")
+        st.write("WiFi password retrieval is supported only on Windows.")
 
 elif option == "Connected Devices":
     st.subheader("Devices Connected to Your Network")
