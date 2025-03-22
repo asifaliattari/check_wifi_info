@@ -54,7 +54,7 @@ def get_local_ip():
 
 # Check if the app is being accessed from a mobile device
 def is_mobile():
-    user_agent = st.experimental_get_query_params().get('user_agent', [''])[0]
+    user_agent = st.query_params.get('user_agent', [''])[0]  # Using the new method to get query params
     return 'android' in user_agent.lower()
 
 # Streamlit UI
