@@ -1,94 +1,65 @@
 import streamlit as st
 import subprocess
-import re
-import platform
+import psutil
 
-# Function to get WiFi password (Windows-only)
-def get_wifi_password():
+# Function to get saved WiFi passwords
+def get_saved_wifi_passwords():
+    wifi_passwords = {}
     try:
-        system = platform.system()
-        if system == 'Windows':
-            result = subprocess.run(["netsh", "wlan", "show", "profiles"], capture_output=True, text=True)
-            profiles = re.findall(r"All User Profile\s*:\s*(.*)", result.stdout)
+        # Get all Wi-Fi profiles
+        profiles = subprocess.check_output('netsh wlan show profiles', shell=True).decode('utf-8', errors="backslashreplace")
+        profiles = [x.split(":")[-1][1:-1] for x in profiles.split("\n") if "All User Profile" in x]
+        
+        for profile in profiles:
+            try:
+                # Get the password for each profile
+                password = subprocess.check_output(f'netsh wlan show profile "{profile}" key=clear', shell=True).decode('utf-8', errors="backslashreplace")
+                password = [x.split(":")[-1][1:-1] for x in password.split("\n") if "Key Content" in x]
+                if password:
+                    wifi_passwords[profile] = password[0]
+                else:
+                    wifi_passwords[profile] = "No password set"
+            except subprocess.CalledProcessError:
+                wifi_passwords[profile] = "No password found"
+    except subprocess.CalledProcessError:
+        wifi_passwords = {}
+    return wifi_passwords
 
-            wifi_data = {}
-            for profile in profiles:
-                profile = profile.strip()
-                result = subprocess.run(["netsh", "wlan", "show", "profile", profile, "key=clear"], capture_output=True, text=True)
-                password_match = re.search(r"Key Content\s*:\s*(.*)", result.stdout)
-                wifi_data[profile] = password_match.group(1) if password_match else "No Password Found"
-            
-            return wifi_data
-        else:
-            return {"Error": "WiFi password retrieval is supported only on Windows."}
-    except Exception as e:
-        return {"Error": str(e)}
-
-# Function to get connected devices (Works on Windows, Linux/macOS alternative could be added)
+# Function to get connected devices on the same network
 def get_connected_devices():
+    devices = []
     try:
-        system = platform.system()
-        if system == 'Windows':
-            result = subprocess.run(["arp", "-a"], capture_output=True, text=True)
-            devices = re.findall(r"(\d+\.\d+\.\d+\.\d+)", result.stdout)
-            return devices
+        # Run the arp command to get all devices connected to the same network
+        result = subprocess.check_output('arp -a', shell=True).decode('utf-8', errors="backslashreplace")
+        devices = [line.split()[0] for line in result.splitlines()[3:] if len(line.split()) >= 2]
+    except subprocess.CalledProcessError:
+        devices = []
+    return devices
+
+# Streamlit UI components
+def app():
+    st.title("WiFi Passwords and Connected Devices Viewer")
+
+    # Button to get saved WiFi passwords
+    if st.button('Show Saved WiFi Passwords'):
+        st.subheader("Saved WiFi Passwords:")
+        wifi_passwords = get_saved_wifi_passwords()
+        if wifi_passwords:
+            for wifi, password in wifi_passwords.items():
+                st.write(f"{wifi}: {password}")
         else:
-            return ["Error: Device detection is supported only on Windows."]
-    except Exception as e:
-        return ["Error: " + str(e)]
-
-# Function to get the local machine's IP address
-def get_local_ip():
-    try:
-        system = platform.system()
-        if system == 'Windows':
-            result = subprocess.run(["ipconfig"], capture_output=True, text=True)
-            match = re.search(r"IPv4 Address[.\s]+: (\d+\.\d+\.\d+\.\d+)", result.stdout)
-            return match.group(1) if match else "Error"
+            st.write("No saved WiFi passwords found.")
+    
+    # Button to show connected devices
+    if st.button('Show Connected Devices'):
+        st.subheader("Devices Connected to the Network:")
+        connected_devices = get_connected_devices()
+        if connected_devices:
+            for device in connected_devices:
+                st.write(device)
         else:
-            # For Linux/macOS, use 'hostname' to get the local IP
-            result = subprocess.run(["hostname", "-I"], capture_output=True, text=True)
-            return result.stdout.strip() if result.returncode == 0 else "Error"
-    except Exception as e:
-        return str(e)
+            st.write("No devices found or unable to fetch connected devices.")
 
-# Check if the app is being accessed from a mobile device
-def is_mobile():
-    # Correctly using st.query_params to access the query parameters
-    user_agent = st.query_params.get('user_agent', [''])[0]
-    return 'android' in user_agent.lower()
-
-# Streamlit UI
-st.title("WiFi and Network Information Manager")
-
-# Check for mobile devices and adjust UI accordingly
-if is_mobile():
-    st.subheader("Mobile Device Detected")
-    st.write("Unfortunately, WiFi password retrieval and network information features are not supported on mobile devices.")
-    option = None
-else:
-    option = st.sidebar.radio("Select an option", ["Check WiFi Password", "Connected Devices", "Your Local IP"], key="unique_radio_key")
-
-if option == "Check WiFi Password":
-    st.subheader("Saved WiFi Passwords")
-    passwords = get_wifi_password()
-    if "Error" in passwords:
-        st.write(passwords["Error"])
-    else:
-        for wifi, pwd in passwords.items():
-            st.write(f"**{wifi}**: {pwd}")
-
-elif option == "Connected Devices":
-    st.subheader("Devices Connected to Your Network")
-    devices = get_connected_devices()
-    if "Error" in devices:
-        st.write(devices[0])
-    else:
-        st.write("Connected Devices IPs:")
-        for device in devices:
-            st.write(device)
-
-elif option == "Your Local IP":
-    st.subheader("Your Local IP Address")
-    local_ip = get_local_ip()
-    st.write(local_ip)
+# Run the Streamlit app
+if __name__ == "__main__":
+    app()
