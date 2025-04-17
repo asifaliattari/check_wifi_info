@@ -1,0 +1,15 @@
+# Password Strength Meter - Project Dependencies
+# -----------------------------------------------
+# This file lists the Python packages required to run the Streamlit app.
+# To install all dependencies, run:
+#
+#     pip install -r requirements.txt
+#
+# Requirements:
+# - Python 3.7+
+# - Internet connection (to download packages)
+#
+# Main Library Used:
+# - Streamlit: For creating the interactive web interface
+
+streamlit>=1.20.0
