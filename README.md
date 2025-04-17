@@ -6,7 +6,7 @@ Absolutely! Here's a clean and professional `README.md` file you can use for you
 
 A **Streamlit-based web app** that evaluates password strength and helps users create secure passwords. It analyzes passwords based on key security rules, gives real-time feedback, and can generate strong passwords for you.
 
-![Screenshot](https://via.placeholder.com/800x400?text=App+Screenshot+Here) <!-- Replace with real screenshot -->
+![App Screenshot](./screenshot.png) <!-- Replace with real screenshot -->
 
 ---
 
