@@ -93,7 +93,7 @@ streamlit run app.py
 
 ## 📜 License
 
-MIT License © 2025 Your Name
+MIT License © 2025 Asif Ali
 
 ---
 
@@ -102,5 +102,3 @@ MIT License © 2025 Your Name
 Built with ❤️ using [Streamlit](https://streamlit.io/)
 
 ---
-
-Would you like me to generate a `requirements.txt` for this as well?
