@@ -1,65 +1,104 @@
 import streamlit as st
-import subprocess
-import psutil
+import random
+import string
+import re
 
-# Function to get saved WiFi passwords
-def get_saved_wifi_passwords():
-    wifi_passwords = {}
-    try:
-        # Get all Wi-Fi profiles
-        profiles = subprocess.check_output('netsh wlan show profiles', shell=True).decode('utf-8', errors="backslashreplace")
-        profiles = [x.split(":")[-1][1:-1] for x in profiles.split("\n") if "All User Profile" in x]
-        
-        for profile in profiles:
-            try:
-                # Get the password for each profile
-                password = subprocess.check_output(f'netsh wlan show profile "{profile}" key=clear', shell=True).decode('utf-8', errors="backslashreplace")
-                password = [x.split(":")[-1][1:-1] for x in password.split("\n") if "Key Content" in x]
-                if password:
-                    wifi_passwords[profile] = password[0]
-                else:
-                    wifi_passwords[profile] = "No password set"
-            except subprocess.CalledProcessError:
-                wifi_passwords[profile] = "No password found"
-    except subprocess.CalledProcessError:
-        wifi_passwords = {}
-    return wifi_passwords
+# ------------------ Blacklist ------------------
+blacklist = [
+    "password", "123456", "qwerty", "letmein", "admin",
+    "welcome", "password123", "abc123", "111111", "iloveyou"
+]
 
-# Function to get connected devices on the same network
-def get_connected_devices():
-    devices = []
-    try:
-        # Run the arp command to get all devices connected to the same network
-        result = subprocess.check_output('arp -a', shell=True).decode('utf-8', errors="backslashreplace")
-        devices = [line.split()[0] for line in result.splitlines()[3:] if len(line.split()) >= 2]
-    except subprocess.CalledProcessError:
-        devices = []
-    return devices
+# ------------------ Strength Checker ------------------
+def check_password_strength(password):
+    score = 0
+    feedback = []
 
-# Streamlit UI components
-def app():
-    st.title("WiFi Passwords and Connected Devices Viewer")
+    # Check blacklist
+    if password.lower() in blacklist:
+        feedback.append("This password is too common. Choose something less predictable.")
+        return 1, "Weak", feedback
 
-    # Button to get saved WiFi passwords
-    if st.button('Show Saved WiFi Passwords'):
-        st.subheader("Saved WiFi Passwords:")
-        wifi_passwords = get_saved_wifi_passwords()
-        if wifi_passwords:
-            for wifi, password in wifi_passwords.items():
-                st.write(f"{wifi}: {password}")
-        else:
-            st.write("No saved WiFi passwords found.")
-    
-    # Button to show connected devices
-    if st.button('Show Connected Devices'):
-        st.subheader("Devices Connected to the Network:")
-        connected_devices = get_connected_devices()
-        if connected_devices:
-            for device in connected_devices:
-                st.write(device)
-        else:
-            st.write("No devices found or unable to fetch connected devices.")
+    # Length check
+    if len(password) >= 8:
+        score += 1
+    else:
+        feedback.append("Use at least 8 characters.")
 
-# Run the Streamlit app
-if __name__ == "__main__":
-    app()
+    # Upper and lowercase
+    if re.search(r'[A-Z]', password) and re.search(r'[a-z]', password):
+        score += 1
+    else:
+        feedback.append("Include both uppercase and lowercase letters.")
+
+    # Digit
+    if re.search(r'\d', password):
+        score += 1
+    else:
+        feedback.append("Add at least one digit (0-9).")
+
+    # Special character
+    if re.search(r'[!@#$%^&*]', password):
+        score += 1
+    else:
+        feedback.append("Add at least one special character (!@#$%^&*).")
+
+    # Bonus: No obvious patterns (e.g., 12345, abcd)
+    if not re.search(r'(123|abc|000)', password.lower()):
+        score += 1
+    else:
+        feedback.append("Avoid common patterns like '123', 'abc', or '000'.")
+
+    # Determine strength label
+    if score <= 2:
+        label = "Weak"
+    elif score <= 4:
+        label = "Moderate"
+    else:
+        label = "Strong"
+
+    return score, label, feedback
+
+# ------------------ Password Generator ------------------
+def generate_strong_password(length=12):
+    chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    while True:
+        password = ''.join(random.choice(chars) for _ in range(length))
+        _, label, _ = check_password_strength(password)
+        if label == "Strong":
+            return password
+
+# ------------------ Streamlit UI ------------------
+st.title("🔐 Password Strength Meter (Asif)")
+
+st.write("Check your password strength and get tips to improve it. You can also generate a strong password.")
+
+# Password input
+user_password = st.text_input("Enter your password", type="password")
+
+if user_password:
+    score, label, feedback = check_password_strength(user_password)
+
+    # Show strength level
+    if label == "Weak":
+        st.error(f"Password Strength: {label} (Score: {score}/5)")
+    elif label == "Moderate":
+        st.warning(f"Password Strength: {label} (Score: {score}/5)")
+    else:
+        st.success(f"Password Strength: {label} (Score: {score}/5)")
+
+    # Show suggestions
+    if label != "Strong":
+        st.subheader("🔧 Suggestions to improve your password:")
+        for tip in feedback:
+            st.write(f"- {tip}")
+    else:
+        st.balloons()
+        st.success("🎉 Your password is strong! Great job!")
+
+# Password Generator
+st.subheader("🔄 Generate a Strong Password")
+
+if st.button("Generate Password"):
+    new_password = generate_strong_password()
+    st.success(f"Suggested Strong Password: `{new_password}`")
