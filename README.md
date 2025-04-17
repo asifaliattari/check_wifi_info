@@ -6,8 +6,6 @@ Absolutely! Here's a clean and professional `README.md` file you can use for you
 
 A **Streamlit-based web app** that evaluates password strength and helps users create secure passwords. It analyzes passwords based on key security rules, gives real-time feedback, and can generate strong passwords for you.
 
-![App Screenshot](./screenshot.png) <!-- Replace with real screenshot -->
-
 ---
 
 ## 🚀 Features
@@ -81,13 +79,7 @@ streamlit run app.py
 
 ---
 
-## 📸 Screenshot
 
-> Replace this with a real image of your app running
-
-![Demo](https://via.placeholder.com/800x400?text=Demo+Screenshot)
-
----
 
 ## 💬 To-Do / Future Ideas
 
